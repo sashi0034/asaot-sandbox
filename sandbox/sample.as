@@ -8,12 +8,9 @@ int fib(int n)
 
 int main()
 {
-    print("sample.as: begin\n");
-
     int total = 0;
     for (int i = 0; i < 6; ++i)
         total += fib(10) + i;
 
-    print("sample.as: end\n");
     return total;
 }

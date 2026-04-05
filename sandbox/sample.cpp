@@ -179,7 +179,7 @@ int main(int argc, char **argv) {
 #endif
 
     ctx->Release();
-    delete jit;
     engine->ShutDownAndRelease();
+    delete jit;
     return 0;
 }
