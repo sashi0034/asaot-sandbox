@@ -3,6 +3,7 @@
 #include <string>
 
 #include <angelscript.h>
+#include <scriptmath/scriptmath.h>
 #include <scriptstdstring/scriptstdstring.h>
 
 #include "AOTCompiler.h"
@@ -122,6 +123,9 @@ int main(int argc, char **argv) {
     engine->SetEngineProperty(asEP_OPTIMIZE_BYTECODE, 1);
 
     RegisterStdString(engine);
+    engine->SetDefaultNamespace("math");
+    RegisterScriptMath(engine);
+    engine->SetDefaultNamespace("");
     int r = engine->RegisterGlobalFunction("void print(const string &in)", asFUNCTION(Print), asCALL_CDECL);
     if (r < 0) {
         std::cerr << "RegisterGlobalFunction failed: " << r << '\n';

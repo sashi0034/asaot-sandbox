@@ -53,6 +53,7 @@ file(WRITE "${SANDBOX_AOT_GENERATED}" "// Replaced by sandbox_generate\n")
 add_executable(sandbox_generate
     "${SANDBOX_SOURCE}"
     "${SANDBOX_AOT_STUB}"
+    "${ANGELSCRIPT_ROOT}/add_on/scriptmath/scriptmath.cpp"
     "${ANGELSCRIPT_ROOT}/add_on/scriptstdstring/scriptstdstring.cpp"
 )
 
@@ -75,6 +76,7 @@ add_custom_command(
 add_executable(sandbox_run
     "${SANDBOX_SOURCE}"
     "${SANDBOX_AOT_GENERATED}"
+    "${ANGELSCRIPT_ROOT}/add_on/scriptmath/scriptmath.cpp"
     "${ANGELSCRIPT_ROOT}/add_on/scriptstdstring/scriptstdstring.cpp"
 )
 
@@ -87,4 +89,3 @@ target_include_directories(sandbox_run PRIVATE
 )
 target_link_libraries(sandbox_run PRIVATE asaot_runtime)
 add_dependencies(sandbox_run sandbox_generate)
-
