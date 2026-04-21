@@ -96,6 +96,10 @@ std::string ReadAll(const char *path) {
 
 }  // namespace
 
+void AOTNativePrint(const std::string &text) {
+    Print(text);
+}
+
 #if !SANDBOX_GENERATE_AOT
 extern unsigned int AOTLinkerTableSize;
 extern AOTLinkerEntry AOTLinkerTable[];
@@ -137,8 +141,23 @@ int main(int argc, char **argv) {
 #else
     SimpleAOTLinker linker(AOTLinkerTable, AOTLinkerTableSize);
 #endif
-    asIJITCompiler *jit = new AOTCompiler(&linker);
+    AOTCompiler *jit = new AOTCompiler(&linker);
     engine->SetJITCompiler(jit);
+
+    if (asIScriptFunction *printFunc = engine->GetGlobalFunctionByDecl("void print(const string &in)")) {
+        jit->RegisterDirectCall(printFunc,
+                                "void AOTNativePrint(const std::string &text);",
+                                "AOTNativePrint",
+                                std::vector<std::string>(1, "const std::string &"));
+    }
+    engine->SetDefaultNamespace("math");
+    if (asIScriptFunction *sinFunc = engine->GetGlobalFunctionByDecl("float sin(float)")) {
+        jit->RegisterDirectCall(sinFunc,
+                                "extern \"C\" float sinf(float);",
+                                "sinf",
+                                std::vector<std::string>(1, "float"));
+    }
+    engine->SetDefaultNamespace("");
 
     asIScriptModule *module = engine->GetModule("sandbox", asGM_ALWAYS_CREATE);
     module->AddScriptSection(scriptPath, script.c_str(), static_cast<unsigned int>(script.size()));
