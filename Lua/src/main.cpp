@@ -65,16 +65,13 @@ int main() {
             const bool has_script_function = lua_isfunction(L, -1);
             lua_pop(L, 1);
 
-            slc::BenchmarkSample sample;
             if (!has_script_function) {
-                std::cerr << "[Lua] missing script function '" << item.name << "', recording zero time\n";
-                sample.name = item.name;
-                sample.repeat_count = item.repeat_count;
-            } else {
-                sample = slc::run_benchmark_sample(item, [&](int repeat_count) {
-                    return execute_benchmark_function(L, fn_name, repeat_count);
-                });
+                throw std::runtime_error("missing Lua benchmark function: " + fn_name);
             }
+
+            slc::BenchmarkSample sample = slc::run_benchmark_sample(item, [&](int repeat_count) {
+                return execute_benchmark_function(L, fn_name, repeat_count);
+            });
 
             std::cout << "[Lua] " << sample.name
                       << " best=" << slc::format_double(sample.best_ms)

@@ -7,8 +7,14 @@ local function mix32(x)
   return x & 0xffffffff
 end
 
+local function u32(x)
+  return x & 0xffffffff
+end
+
 local function mix_checksum(acc, value)
-  return (acc ~ (value + 0x9e3779b9 + ((acc << 6) & 0xffffffffffffffff) + (acc >> 2))) & 0xffffffffffffffff
+  acc = u32(acc)
+  value = u32(value)
+  return u32(acc ~ u32(value + 0x9e3779b9 + u32(acc << 6) + (acc >> 2)))
 end
 
 local function rotr(x, n)
@@ -68,14 +74,14 @@ local function work_exp_loop(seed)
 end
 
 local function work_fibonacci_loop(seed)
-  local a = seed
-  local b = seed + 1
+  local a = u32(seed)
+  local b = u32(seed + 1)
   local acc = 0
   for _ = 1, 250000 do
-    local c = a + b
+    local c = u32(a + b)
     a = b
     b = c
-    acc = acc ~ c
+    acc = u32(acc ~ c)
   end
   return mix_checksum(acc, a ~ b)
 end
@@ -162,9 +168,9 @@ local function work_n_bodies(seed)
 end
 
 local function work_native_loop(seed)
-  local acc = seed
+  local acc = u32(seed)
   for i = 0, 4000000 do
-    acc = (acc + ((i * 3) ~ (i >> 2))) & 0xffffffffffffffff
+    acc = u32(acc + u32((i * 3) ~ (i >> 2)))
   end
   return acc
 end
