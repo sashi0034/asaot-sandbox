@@ -1,0 +1,117 @@
+{
+  "runtime": "Lua",
+  "items": [
+    {
+      "name": "dictionary",
+      "repeat_count": 10,
+      "best_ms": 4.025,
+      "median_ms": 4.258,
+      "runs_ms": [4.312, 4.258, 4.328, 4.246, 4.025]
+    },
+    {
+      "name": "exp_loop",
+      "repeat_count": 8,
+      "best_ms": 9.458,
+      "median_ms": 9.561,
+      "runs_ms": [9.561, 9.749, 9.878, 9.458, 9.551]
+    },
+    {
+      "name": "fibonacci_loop",
+      "repeat_count": 14,
+      "best_ms": 26.914,
+      "median_ms": 27.399,
+      "runs_ms": [26.914, 27.046, 27.580, 27.399, 27.739]
+    },
+    {
+      "name": "fibonacci_recursive",
+      "repeat_count": 8,
+      "best_ms": 599.702,
+      "median_ms": 612.743,
+      "runs_ms": [599.702, 612.743, 603.789, 836.789, 1144.874]
+    },
+    {
+      "name": "float2string",
+      "repeat_count": 8,
+      "best_ms": 61.268,
+      "median_ms": 65.187,
+      "runs_ms": [65.187, 66.838, 61.268, 64.183, 65.522]
+    },
+    {
+      "name": "mandelbrot",
+      "repeat_count": 8,
+      "best_ms": 78.444,
+      "median_ms": 79.120,
+      "runs_ms": [78.444, 79.077, 79.120, 79.514, 79.156]
+    },
+    {
+      "name": "n_bodies",
+      "repeat_count": 12,
+      "best_ms": 13.874,
+      "median_ms": 14.354,
+      "runs_ms": [14.354, 13.874, 14.395, 15.038, 14.115]
+    },
+    {
+      "name": "native_loop",
+      "repeat_count": 8,
+      "best_ms": 506.997,
+      "median_ms": 512.623,
+      "runs_ms": [517.476, 513.736, 512.623, 506.997, 512.127]
+    },
+    {
+      "name": "particles_kinematics",
+      "repeat_count": 10,
+      "best_ms": 1156.507,
+      "median_ms": 1175.995,
+      "runs_ms": [1156.507, 1158.608, 1178.979, 1207.206, 1175.995]
+    },
+    {
+      "name": "primes_loop",
+      "repeat_count": 10,
+      "best_ms": 23.000,
+      "median_ms": 23.288,
+      "runs_ms": [23.000, 23.343, 23.288, 23.485, 23.190]
+    },
+    {
+      "name": "queen",
+      "repeat_count": 8,
+      "best_ms": 333.410,
+      "median_ms": 335.200,
+      "runs_ms": [334.476, 333.410, 335.200, 339.343, 337.961]
+    },
+    {
+      "name": "sha256",
+      "repeat_count": 8,
+      "best_ms": 549.956,
+      "median_ms": 555.430,
+      "runs_ms": [555.430, 570.404, 549.956, 551.556, 556.304]
+    },
+    {
+      "name": "sort",
+      "repeat_count": 10,
+      "best_ms": 6.175,
+      "median_ms": 6.231,
+      "runs_ms": [6.558, 6.195, 6.276, 6.175, 6.231]
+    },
+    {
+      "name": "spectral_norm",
+      "repeat_count": 8,
+      "best_ms": 259.634,
+      "median_ms": 269.251,
+      "runs_ms": [265.248, 269.849, 270.497, 269.251, 259.634]
+    },
+    {
+      "name": "string2float",
+      "repeat_count": 8,
+      "best_ms": 68.624,
+      "median_ms": 72.010,
+      "runs_ms": [71.606, 74.749, 72.010, 72.546, 68.624]
+    },
+    {
+      "name": "tree",
+      "repeat_count": 8,
+      "best_ms": 59.757,
+      "median_ms": 60.419,
+      "runs_ms": [61.527, 59.757, 60.419, 60.189, 63.276]
+    }
+  ]
+}
