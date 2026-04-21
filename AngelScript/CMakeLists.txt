@@ -53,16 +53,18 @@ file(WRITE "${ANGELSCRIPT_AOT_GENERATED}" "// Replaced by angelscript_generate\n
 add_executable(angelscript_generate
     "${ANGELSCRIPT_SOURCE}"
     "${ANGELSCRIPT_AOT_STUB}"
-    "${ANGELSCRIPT_ROOT}/add_on/scriptmath/scriptmath.cpp"
-    "${ANGELSCRIPT_ROOT}/add_on/scriptstdstring/scriptstdstring.cpp"
 )
 
-target_compile_definitions(angelscript_generate PRIVATE SANDBOX_GENERATE_AOT=1)
+target_compile_definitions(angelscript_generate PRIVATE
+    SANDBOX_GENERATE_AOT=1
+    SANDBOX_USE_AOT=0
+)
 target_include_directories(angelscript_generate PRIVATE
     "${ASAOT_ROOT}/include"
     "${ANGELSCRIPT_SRC_ROOT}/include"
     "${ANGELSCRIPT_SRC_ROOT}/source"
     "${ANGELSCRIPT_ROOT}/add_on"
+    "${CMAKE_CURRENT_LIST_DIR}/.."
 )
 target_link_libraries(angelscript_generate PRIVATE asaot_runtime)
 
@@ -73,19 +75,43 @@ add_custom_command(
     VERBATIM
 )
 
-add_executable(angelscript_benchmark
+add_executable(angelscript_benchmark_aot
     "${ANGELSCRIPT_SOURCE}"
     "${ANGELSCRIPT_AOT_GENERATED}"
-    "${ANGELSCRIPT_ROOT}/add_on/scriptmath/scriptmath.cpp"
-    "${ANGELSCRIPT_ROOT}/add_on/scriptstdstring/scriptstdstring.cpp"
 )
 
-target_compile_definitions(angelscript_benchmark PRIVATE SANDBOX_GENERATE_AOT=0)
-target_include_directories(angelscript_benchmark PRIVATE
+target_compile_definitions(angelscript_benchmark_aot PRIVATE
+    SANDBOX_GENERATE_AOT=0
+    SANDBOX_USE_AOT=1
+)
+target_include_directories(angelscript_benchmark_aot PRIVATE
     "${ASAOT_ROOT}/include"
     "${ANGELSCRIPT_SRC_ROOT}/include"
     "${ANGELSCRIPT_SRC_ROOT}/source"
     "${ANGELSCRIPT_ROOT}/add_on"
+    "${CMAKE_CURRENT_LIST_DIR}/.."
 )
-target_link_libraries(angelscript_benchmark PRIVATE asaot_runtime)
-add_dependencies(angelscript_benchmark angelscript_generate)
+target_link_libraries(angelscript_benchmark_aot PRIVATE asaot_runtime)
+add_dependencies(angelscript_benchmark_aot angelscript_generate)
+
+add_executable(angelscript_benchmark_noaot
+    "${ANGELSCRIPT_SOURCE}"
+    "${ANGELSCRIPT_AOT_STUB}"
+)
+
+target_compile_definitions(angelscript_benchmark_noaot PRIVATE
+    SANDBOX_GENERATE_AOT=0
+    SANDBOX_USE_AOT=0
+)
+target_include_directories(angelscript_benchmark_noaot PRIVATE
+    "${ASAOT_ROOT}/include"
+    "${ANGELSCRIPT_SRC_ROOT}/include"
+    "${ANGELSCRIPT_SRC_ROOT}/source"
+    "${ANGELSCRIPT_ROOT}/add_on"
+    "${CMAKE_CURRENT_LIST_DIR}/.."
+)
+target_link_libraries(angelscript_benchmark_noaot PRIVATE asaot_runtime)
+
+add_custom_target(angelscript_benchmark
+    DEPENDS angelscript_benchmark_noaot angelscript_benchmark_aot
+)

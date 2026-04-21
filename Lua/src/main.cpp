@@ -72,7 +72,7 @@ int main() {
                 sample.repeat_count = item.repeat_count;
             } else {
                 sample = slc::run_benchmark_sample(item, [&](int repeat_count) {
-                    slc::consume(execute_benchmark_function(L, fn_name, repeat_count));
+                    return execute_benchmark_function(L, fn_name, repeat_count);
                 });
             }
 

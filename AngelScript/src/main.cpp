@@ -1,10 +1,14 @@
+#include "../../common/benchmark_common.h"
+#include "../../common/benchmark_workloads.h"
+
+#include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 #include <string>
+#include <vector>
 
 #include <angelscript.h>
-#include <scriptmath/scriptmath.h>
-#include <scriptstdstring/scriptstdstring.h>
 
 #include "AOTCompiler.h"
 
@@ -20,7 +24,7 @@ public:
             kind = "INFO";
         }
 
-        std::cout << msg->section << " (" << msg->row << ", " << msg->col << ") : "
+        std::cerr << msg->section << " (" << msg->row << ", " << msg->col << ") : "
                   << kind << " : " << msg->message << '\n';
     }
 };
@@ -85,124 +89,166 @@ private:
     unsigned int size_;
 };
 
-void Print(const std::string &text) {
-    std::cout << text;
-}
-
-std::string ReadAll(const char *path) {
+std::string read_all(const std::filesystem::path &path) {
     std::ifstream file(path, std::ios::binary);
+    if (!file) {
+        throw std::runtime_error("failed to read script: " + path.string());
+    }
     return std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 }
 
-}  // namespace
-
-void AOTNativePrint(const std::string &text) {
-    Print(text);
+void require_as(int code, const std::string &message) {
+    if (code < 0) {
+        throw std::runtime_error(message + ": " + std::to_string(code));
+    }
 }
 
-#if !SANDBOX_GENERATE_AOT
+asIScriptModule *build_module(asIScriptEngine *engine, const std::filesystem::path &script_path) {
+    const std::string script = read_all(script_path);
+    asIScriptModule *module = engine->GetModule("benchmark", asGM_ALWAYS_CREATE);
+    require_as(module->AddScriptSection(script_path.string().c_str(),
+                                        script.c_str(),
+                                        static_cast<unsigned int>(script.size())),
+               "AddScriptSection failed");
+    require_as(module->Build(), "Build failed");
+    return module;
+}
+
+std::uint64_t execute_benchmark_function(asIScriptEngine *engine,
+                                         asIScriptModule *module,
+                                         const std::string &name,
+                                         int repeat_count) {
+    const std::string decl = "uint benchmark_" + name + "(int)";
+    asIScriptFunction *function = module->GetFunctionByDecl(decl.c_str());
+    if (function == nullptr) {
+        throw std::runtime_error("script function not found: " + decl);
+    }
+
+    asIScriptContext *ctx = engine->CreateContext();
+    if (ctx == nullptr) {
+        throw std::runtime_error("failed to create AngelScript context");
+    }
+
+    int r = ctx->Prepare(function);
+    if (r >= 0) {
+        ctx->SetArgDWord(0, static_cast<asDWORD>(repeat_count));
+        r = ctx->Execute();
+    }
+
+    std::uint64_t result = 0;
+    if (r == asEXECUTION_FINISHED) {
+        result = static_cast<std::uint64_t>(ctx->GetReturnDWord());
+    } else {
+        std::string detail = "AngelScript execution failed: " + name + " code=" + std::to_string(r);
+        if (r == asEXECUTION_EXCEPTION) {
+            detail += " exception=";
+            detail += ctx->GetExceptionString();
+        }
+        ctx->Release();
+        throw std::runtime_error(detail);
+    }
+
+    ctx->Release();
+    return result;
+}
+
+} // namespace
+
+#if SANDBOX_USE_AOT
 extern unsigned int AOTLinkerTableSize;
 extern AOTLinkerEntry AOTLinkerTable[];
 #endif
 
 int main(int argc, char **argv) {
+#if SANDBOX_GENERATE_AOT
     if (argc != 3) {
         std::cerr << "usage: " << argv[0] << " <script.as> <generated.cpp>\n";
         return 2;
     }
+#else
+    if (argc != 3) {
+        std::cerr << "usage: " << argv[0] << " <script.as> <results.json>\n";
+        return 2;
+    }
+#endif
 
-    const char *scriptPath = argv[1];
-    const char *generatedPath = argv[2];
-    const std::string script = ReadAll(scriptPath);
-    if (script.empty()) {
-        std::cerr << "failed to read script: " << scriptPath << '\n';
+    const std::filesystem::path script_path = argv[1];
+
+    asIScriptEngine *engine = asCreateScriptEngine(ANGELSCRIPT_VERSION);
+    if (engine == nullptr) {
+        std::cerr << "failed to create AngelScript engine\n";
         return 3;
     }
 
-    asIScriptEngine *engine = asCreateScriptEngine(ANGELSCRIPT_VERSION);
     MessageCallback callback;
     engine->SetMessageCallback(asMETHOD(MessageCallback, Callback), &callback, asCALL_THISCALL);
     engine->SetEngineProperty(asEP_BUILD_WITHOUT_LINE_CUES, 1);
-    engine->SetEngineProperty(asEP_INCLUDE_JIT_INSTRUCTIONS, 1);
     engine->SetEngineProperty(asEP_OPTIMIZE_BYTECODE, 1);
 
-    RegisterStdString(engine);
-    engine->SetDefaultNamespace("math");
-    RegisterScriptMath(engine);
-    engine->SetDefaultNamespace("");
-    int r = engine->RegisterGlobalFunction("void print(const string &in)", asFUNCTION(Print), asCALL_CDECL);
-    if (r < 0) {
-        std::cerr << "RegisterGlobalFunction failed: " << r << '\n';
-        return 4;
-    }
-
+    AOTCompiler *jit = nullptr;
+    SimpleAOTLinker *linker = nullptr;
 #if SANDBOX_GENERATE_AOT
-    SimpleAOTLinker linker(nullptr, 0);
-#else
-    SimpleAOTLinker linker(AOTLinkerTable, AOTLinkerTableSize);
-#endif
-    AOTCompiler *jit = new AOTCompiler(&linker);
+    engine->SetEngineProperty(asEP_INCLUDE_JIT_INSTRUCTIONS, 1);
+    linker = new SimpleAOTLinker(nullptr, 0);
+    jit = new AOTCompiler(linker);
     engine->SetJITCompiler(jit);
-
-    if (asIScriptFunction *printFunc = engine->GetGlobalFunctionByDecl("void print(const string &in)")) {
-        jit->RegisterDirectCall(printFunc,
-                                "void AOTNativePrint(const std::string &text);",
-                                "AOTNativePrint",
-                                std::vector<std::string>(1, "const std::string &"));
-    }
-    engine->SetDefaultNamespace("math");
-    if (asIScriptFunction *sinFunc = engine->GetGlobalFunctionByDecl("float sin(float)")) {
-        jit->RegisterDirectCall(sinFunc,
-                                "extern \"C\" float sinf(float);",
-                                "sinf",
-                                std::vector<std::string>(1, "float"));
-    }
-    engine->SetDefaultNamespace("");
-
-    asIScriptModule *module = engine->GetModule("sandbox", asGM_ALWAYS_CREATE);
-    module->AddScriptSection(scriptPath, script.c_str(), static_cast<unsigned int>(script.size()));
-    r = module->Build();
-    if (r < 0) {
-        std::cerr << "Build failed: " << r << '\n';
-        delete jit;
-        engine->ShutDownAndRelease();
-        return 5;
-    }
-
-    asIScriptFunction *entry = module->GetFunctionByDecl("int main()");
-    if (entry == nullptr) {
-        std::cerr << "Script entry 'int main()' not found\n";
-        delete jit;
-        engine->ShutDownAndRelease();
-        return 6;
-    }
-
-    asIScriptContext *ctx = engine->CreateContext();
-    ctx->Prepare(entry);
-    r = ctx->Execute();
-    if (r != asEXECUTION_FINISHED) {
-        std::cerr << "Execution failed: " << r << '\n';
-        if (r == asEXECUTION_EXCEPTION) {
-            std::cerr << "Exception: " << ctx->GetExceptionString() << '\n';
-        }
-        ctx->Release();
-        delete jit;
-        engine->ShutDownAndRelease();
-        return 7;
-    }
-
-    std::cout << "script returned: " << ctx->GetReturnDWord() << '\n';
-
-#if SANDBOX_GENERATE_AOT
-    CCodeStream codeStream(generatedPath);
-    static_cast<AOTCompiler *>(jit)->SaveCode(&codeStream);
-    std::cout << "generated AOT source: " << generatedPath << '\n';
-#else
-    std::cout << "linked AOT table size: " << AOTLinkerTableSize << '\n';
+#elif SANDBOX_USE_AOT
+    engine->SetEngineProperty(asEP_INCLUDE_JIT_INSTRUCTIONS, 1);
+    linker = new SimpleAOTLinker(AOTLinkerTable, AOTLinkerTableSize);
+    jit = new AOTCompiler(linker);
+    engine->SetJITCompiler(jit);
 #endif
 
-    ctx->Release();
+    try {
+        asIScriptModule *module = build_module(engine, script_path);
+
+#if SANDBOX_GENERATE_AOT
+        for (const auto &item : slc::benchmark_items()) {
+            slc::consume(execute_benchmark_function(engine, module, item.name, 1));
+        }
+        CCodeStream code_stream(argv[2]);
+        jit->SaveCode(&code_stream);
+        std::cout << "generated AOT source: " << argv[2] << "\n";
+        std::cout << "sink: " << static_cast<unsigned long long>(slc::g_sink) << "\n";
+#else
+        std::vector<slc::BenchmarkSample> samples;
+        for (const auto &item : slc::benchmark_items()) {
+            slc::BenchmarkSample sample = slc::run_benchmark_sample(item, [&](int repeat_count) {
+                return execute_benchmark_function(engine, module, item.name, repeat_count);
+            });
+            std::cout << "["
+#if SANDBOX_USE_AOT
+                      << "AngelScript AOT"
+#else
+                      << "AngelScript"
+#endif
+                      << "] " << sample.name
+                      << " best=" << slc::format_double(sample.best_ms)
+                      << "ms median=" << slc::format_double(sample.median_ms)
+                      << "ms repeat=" << sample.repeat_count << "\n";
+            samples.push_back(sample);
+        }
+
+        const char *engine_name =
+#if SANDBOX_USE_AOT
+            "AngelScript AOT";
+#else
+            "AngelScript";
+#endif
+        slc::write_results_json(argv[2], engine_name, samples);
+        std::cout << "results: " << argv[2] << "\n";
+        std::cout << "sink: " << static_cast<unsigned long long>(slc::g_sink) << "\n";
+#endif
+    } catch (const std::exception &ex) {
+        std::cerr << ex.what() << "\n";
+        engine->ShutDownAndRelease();
+        delete jit;
+        delete linker;
+        return 1;
+    }
+
     engine->ShutDownAndRelease();
     delete jit;
+    delete linker;
     return 0;
 }

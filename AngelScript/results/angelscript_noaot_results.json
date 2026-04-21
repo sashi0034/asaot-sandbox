@@ -1,0 +1,41 @@
+{
+  "engine": "AngelScript",
+  "samples": [
+    {
+      "name": "native_loop",
+      "repeat_count": 1,
+      "best_ms": 40.786750,
+      "median_ms": 41.433856,
+      "average_ms": 41.516797,
+      "checksum": 2571661689,
+      "runs_ms": [42.024688, 41.206710, 41.628971, 40.786750, 41.318812, 42.217794, 41.433856]
+    },
+    {
+      "name": "fibonacci_loop",
+      "repeat_count": 3,
+      "best_ms": 8.960000,
+      "median_ms": 9.349501,
+      "average_ms": 9.335081,
+      "checksum": 215433452,
+      "runs_ms": [9.291783, 8.960000, 9.266545, 9.501470, 9.466322, 9.349501, 9.509949]
+    },
+    {
+      "name": "fibonacci_recursive",
+      "repeat_count": 1,
+      "best_ms": 188.092807,
+      "median_ms": 189.329431,
+      "average_ms": 189.292794,
+      "checksum": 2655782038,
+      "runs_ms": [189.329431, 189.602243, 190.628958, 188.555513, 188.908391, 188.092807, 189.932217]
+    },
+    {
+      "name": "mandelbrot",
+      "repeat_count": 1,
+      "best_ms": 10.969667,
+      "median_ms": 11.704711,
+      "average_ms": 11.679274,
+      "checksum": 2654667767,
+      "runs_ms": [11.487001, 10.969667, 12.267972, 11.704711, 11.589357, 11.781316, 11.954897]
+    }
+  ]
+}

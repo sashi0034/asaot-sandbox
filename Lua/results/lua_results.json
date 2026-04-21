@@ -1,117 +1,41 @@
 {
-  "runtime": "Lua",
-  "items": [
+  "engine": "Lua",
+  "samples": [
     {
-      "name": "dictionary",
-      "repeat_count": 10,
-      "best_ms": 4.025,
-      "median_ms": 4.258,
-      "runs_ms": [4.312, 4.258, 4.328, 4.246, 4.025]
-    },
-    {
-      "name": "exp_loop",
-      "repeat_count": 8,
-      "best_ms": 9.458,
-      "median_ms": 9.561,
-      "runs_ms": [9.561, 9.749, 9.878, 9.458, 9.551]
+      "name": "native_loop",
+      "repeat_count": 1,
+      "best_ms": 65.536475,
+      "median_ms": 66.619529,
+      "average_ms": 66.467184,
+      "checksum": 24093043224953,
+      "runs_ms": [66.788279, 66.619529, 65.536475, 66.048169, 66.452616, 66.913027, 66.912191]
     },
     {
       "name": "fibonacci_loop",
-      "repeat_count": 14,
-      "best_ms": 26.914,
-      "median_ms": 27.399,
-      "runs_ms": [26.914, 27.046, 27.580, 27.399, 27.739]
+      "repeat_count": 3,
+      "best_ms": 8.913761,
+      "median_ms": 9.214716,
+      "average_ms": 9.227044,
+      "checksum": 3666933032357937388,
+      "runs_ms": [9.037723, 9.264317, 9.186958, 9.235151, 9.736680, 8.913761, 9.214716]
     },
     {
       "name": "fibonacci_recursive",
-      "repeat_count": 8,
-      "best_ms": 599.702,
-      "median_ms": 612.743,
-      "runs_ms": [599.702, 612.743, 603.789, 836.789, 1144.874]
-    },
-    {
-      "name": "float2string",
-      "repeat_count": 8,
-      "best_ms": 61.268,
-      "median_ms": 65.187,
-      "runs_ms": [65.187, 66.838, 61.268, 64.183, 65.522]
+      "repeat_count": 1,
+      "best_ms": 100.101193,
+      "median_ms": 103.245698,
+      "average_ms": 103.412092,
+      "checksum": 2655782038,
+      "runs_ms": [100.101193, 102.148743, 107.187587, 103.864788, 106.955239, 100.381398, 103.245698]
     },
     {
       "name": "mandelbrot",
-      "repeat_count": 8,
-      "best_ms": 78.444,
-      "median_ms": 79.120,
-      "runs_ms": [78.444, 79.077, 79.120, 79.514, 79.156]
-    },
-    {
-      "name": "n_bodies",
-      "repeat_count": 12,
-      "best_ms": 13.874,
-      "median_ms": 14.354,
-      "runs_ms": [14.354, 13.874, 14.395, 15.038, 14.115]
-    },
-    {
-      "name": "native_loop",
-      "repeat_count": 8,
-      "best_ms": 506.997,
-      "median_ms": 512.623,
-      "runs_ms": [517.476, 513.736, 512.623, 506.997, 512.127]
-    },
-    {
-      "name": "particles_kinematics",
-      "repeat_count": 10,
-      "best_ms": 1156.507,
-      "median_ms": 1175.995,
-      "runs_ms": [1156.507, 1158.608, 1178.979, 1207.206, 1175.995]
-    },
-    {
-      "name": "primes_loop",
-      "repeat_count": 10,
-      "best_ms": 23.000,
-      "median_ms": 23.288,
-      "runs_ms": [23.000, 23.343, 23.288, 23.485, 23.190]
-    },
-    {
-      "name": "queen",
-      "repeat_count": 8,
-      "best_ms": 333.410,
-      "median_ms": 335.200,
-      "runs_ms": [334.476, 333.410, 335.200, 339.343, 337.961]
-    },
-    {
-      "name": "sha256",
-      "repeat_count": 8,
-      "best_ms": 549.956,
-      "median_ms": 555.430,
-      "runs_ms": [555.430, 570.404, 549.956, 551.556, 556.304]
-    },
-    {
-      "name": "sort",
-      "repeat_count": 10,
-      "best_ms": 6.175,
-      "median_ms": 6.231,
-      "runs_ms": [6.558, 6.195, 6.276, 6.175, 6.231]
-    },
-    {
-      "name": "spectral_norm",
-      "repeat_count": 8,
-      "best_ms": 259.634,
-      "median_ms": 269.251,
-      "runs_ms": [265.248, 269.849, 270.497, 269.251, 259.634]
-    },
-    {
-      "name": "string2float",
-      "repeat_count": 8,
-      "best_ms": 68.624,
-      "median_ms": 72.010,
-      "runs_ms": [71.606, 74.749, 72.010, 72.546, 68.624]
-    },
-    {
-      "name": "tree",
-      "repeat_count": 8,
-      "best_ms": 59.757,
-      "median_ms": 60.419,
-      "runs_ms": [61.527, 59.757, 60.419, 60.189, 63.276]
+      "repeat_count": 1,
+      "best_ms": 9.882642,
+      "median_ms": 10.932207,
+      "average_ms": 11.540699,
+      "checksum": 2654667767,
+      "runs_ms": [9.882642, 11.728085, 10.409154, 10.886067, 13.242952, 13.703786, 10.932207]
     }
   ]
 }
