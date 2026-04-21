@@ -1,3 +1,3 @@
 [submodule "asaot"]
-	path = asaot
+	path = AngelScript/asaot
 	url = https://github.com/sashi0034/asaot
